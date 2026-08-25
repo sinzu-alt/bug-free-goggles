@@ -17,7 +17,7 @@ const APPSTATE_PATH = path.join(__dirname, "appstate.json");
  * This project never asks for or stores raw passwords inside the bot itself —
  * only the exported session cookie (appstate), which is what ws3-fca needs.
  *
- * IMPORTANT: this no longer kills the process when appstate is missing.
+ * IMPORTANT: this does not kill the process when appstate is missing.
  * Instead the dashboard stays up so you can paste your cookie there, then
  * the bot picks it up on the next restart.
  */
