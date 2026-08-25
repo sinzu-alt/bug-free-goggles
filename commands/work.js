@@ -1,38 +1,53 @@
 const economy = require("../utils/economy");
 
-const JOBS = [
-  "delivered packages", "fixed a leaky faucet", "coded a website",
-  "walked someone's dog", "sold street food", "drove a tricycle",
-  "tutored a student", "streamed on Facebook Gaming", "repaired a phone"
-];
-
 module.exports = {
   config: {
-    name: "work",
-    aliases: [],
+    name: "slot",
+    aliases: ["slots"],
     category: "economy",
-    description: "Work to earn coins (has a cooldown)."
+    description: "Bet coins on the slot machine.",
+    usage: "<amount>"
   },
-  run({ api, event, config }) {
+  run({ api, event, args, config }) {
+    const { minBet, maxBet, symbols, payoutMultiplier } = config.slot;
+    const { symbol } = config.currency;
     const user = economy.getUser(event.senderID);
-    const now = Date.now();
-    const cooldownMs = config.currency.workCooldownMinutes * 60 * 1000;
 
-    if (now - user.lastWork < cooldownMs) {
-      const remain = cooldownMs - (now - user.lastWork);
-      const mins = Math.ceil(remain / 60000);
-      return api.sendMessage(`⏳ You're tired. Rest for ${mins} more minute(s).`, event.threadID);
+    const bet = parseInt(args[0], 10);
+    if (!bet || isNaN(bet)) {
+      return api.sendMessage(`🎰 Usage: slot <amount>\nMin bet: ${symbol}${minBet}, Max bet: ${symbol}${maxBet}`, event.threadID);
+    }
+    if (bet < minBet || bet > maxBet) {
+      return api.sendMessage(`❌ Bet must be between ${symbol}${minBet} and ${symbol}${maxBet}.`, event.threadID);
+    }
+    if (user.balance < bet) {
+      return api.sendMessage(`❌ You don't have enough coins. Balance: ${symbol}${user.balance}`, event.threadID);
     }
 
-    const { workMin, workMax, symbol } = config.currency;
-    const earned = Math.floor(Math.random() * (workMax - workMin + 1)) + workMin;
-    const job = JOBS[Math.floor(Math.random() * JOBS.length)];
+    const roll = () => symbols[Math.floor(Math.random() * symbols.length)];
+    const spin = [roll(), roll(), roll()];
+    const display = spin.join(" | ");
 
-    economy.updateUser(event.senderID, {
-      balance: user.balance + earned,
-      lastWork: now
-    });
+    let resultMsg;
+    let newBalance;
+    if (spin[0] === spin[1] && spin[1] === spin[2]) {
+      const winnings = bet * payoutMultiplier;
+      newBalance = economy.addBalance(event.senderID, winnings - bet);
+      economy.updateUser(event.senderID, { wins: (user.wins || 0) + 1 });
+      resultMsg = `🎉 JACKPOT! You won ${symbol}${winnings.toLocaleString()}!`;
+    } else if (spin[0] === spin[1] || spin[1] === spin[2] || spin[0] === spin[2]) {
+      const winnings = Math.floor(bet * 1.5);
+      newBalance = economy.addBalance(event.senderID, winnings - bet);
+      resultMsg = `✨ Two match! You won ${symbol}${winnings.toLocaleString()}!`;
+    } else {
+      newBalance = economy.removeBalance(event.senderID, bet);
+      economy.updateUser(event.senderID, { losses: (user.losses || 0) + 1 });
+      resultMsg = `💔 No match. You lost ${symbol}${bet.toLocaleString()}.`;
+    }
 
-    api.sendMessage(`🛠️ You ${job} and earned ${symbol}${earned.toLocaleString()}!`, event.threadID);
+    api.sendMessage(
+      `🎰 [ ${display} ] 🎰\n${resultMsg}\nNew balance: ${symbol}${newBalance.toLocaleString()}`,
+      event.threadID
+    );
   }
 };
