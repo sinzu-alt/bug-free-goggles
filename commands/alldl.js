@@ -28,7 +28,6 @@ module.exports = {
         );
       }
 
-      // Everything else (YouTube, TikTok, Facebook, Instagram, Twitter/X) via yt-dlp
       const filePath = await ytDlpDownload(url);
       api.sendMessage(
         { body: "✅ Here's your media!", attachment: fs.createReadStream(filePath) },
