@@ -1,0 +1,26 @@
+{
+  "name": "sinzu-bot",
+  "version": "1.0.1",
+  "description": "Sinzu Bot - Facebook Messenger bot with ws3-fca, economy system, and multi-platform downloader",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dashboard": "node dashboard/server.js"
+  },
+  "dependencies": {
+    "ws3-fca": "^1.0.0",
+    "c3c-fbstate": "^1.0.6",
+    "express": "^4.19.2",
+    "axios": "^1.7.2",
+    "cheerio": "^1.0.0-rc.12",
+    "chalk": "^4.1.2",
+    "moment-timezone": "^0.5.45",
+    "fs-extra": "^11.2.0",
+    "body-parser": "^1.20.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "author": "you",
+  "license": "MIT"
+}
