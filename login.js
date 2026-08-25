@@ -16,18 +16,22 @@ const APPSTATE_PATH = path.join(__dirname, "appstate.json");
  *
  * This project never asks for or stores raw passwords inside the bot itself —
  * only the exported session cookie (appstate), which is what ws3-fca needs.
+ *
+ * IMPORTANT: this no longer kills the process when appstate is missing.
+ * Instead the dashboard stays up so you can paste your cookie there, then
+ * the bot picks it up on the next restart.
  */
 function loadAppState() {
   if (!fs.existsSync(APPSTATE_PATH)) {
     console.log(chalk.red("[LOGIN] appstate.json not found."));
-    console.log(chalk.yellow("Generate one with c3c-fbstate, or paste your exported cookie JSON into appstate.json"));
-    process.exit(1);
+    console.log(chalk.yellow("Open the dashboard and paste your exported cookie JSON, then restart the service."));
+    return null;
   }
   try {
     return fs.readJsonSync(APPSTATE_PATH);
   } catch (e) {
     console.log(chalk.red("[LOGIN] appstate.json is not valid JSON: " + e.message));
-    process.exit(1);
+    return null;
   }
 }
 
