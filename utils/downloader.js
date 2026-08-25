@@ -7,11 +7,6 @@ const fs = require("fs-extra");
 const TMP_DIR = path.join(__dirname, "..", "tmp");
 fs.ensureDirSync(TMP_DIR);
 
-/**
- * Generic downloader for YouTube, TikTok, Facebook, Instagram, Twitter/X
- * Requires yt-dlp installed on the host system (apt/pip install yt-dlp).
- * Returns the local file path of the downloaded media.
- */
 function ytDlpDownload(url) {
   return new Promise((resolve, reject) => {
     const outTemplate = path.join(TMP_DIR, `%(id)s.%(ext)s`);
@@ -27,9 +22,6 @@ function ytDlpDownload(url) {
   });
 }
 
-/**
- * Pinterest downloader - scrapes the og:video / og:image meta tag from a pin page.
- */
 async function pinterestDownload(url) {
   const { data: html } = await axios.get(url, {
     headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)" }
