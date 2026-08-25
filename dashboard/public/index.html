@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sinzu Bot Dashboard</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="wrap">
+
+  <div class="navbar">
+    <div class="brand">🤖 <strong>Sinzu Bot</strong></div>
+    <button class="menu-btn">☰</button>
+  </div>
+
+  <div class="card">
+    <h1>SINZU BOT</h1>
+    <div class="version">Version: 1.0.1</div>
+    <div class="banner">
+      <svg viewBox="0 0 600 260" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#1b3a6b"/>
+            <stop offset="100%" stop-color="#2fa9f0"/>
+          </linearGradient>
+        </defs>
+        <rect width="600" height="260" fill="url(#sky)"/>
+        <circle cx="90" cy="60" r="26" fill="#eef3ff"/>
+        <g fill="#0c1a3a" opacity="0.9">
+          <rect x="0" y="170" width="60" height="90"/>
+          <rect x="70" y="140" width="50" height="120"/>
+          <rect x="130" y="185" width="70" height="75"/>
+          <rect x="470" y="150" width="55" height="110"/>
+          <rect x="530" y="175" width="70" height="85"/>
+        </g>
+      </svg>
+    </div>
+    <p class="desc">Greetings! Begin by entering your Facebook cookie (appstate). Scroll down to see other features.</p>
+  </div>
+
+  <div class="card">
+    <p class="desc" style="margin-bottom:10px;">Paste your Facebook cookie / c3c appstate JSON below.</p>
+    <textarea id="appstate" placeholder='[{"key":"c_user","value":"..."}, ...]  or raw cookie string'></textarea>
+  </div>
+
+  <div class="card">
+    <div class="prompt-box">
+      Please choose your event commands by tapping on the respective options.
+    </div>
+    <button class="gradient-btn" id="selectAllBtn">SELECT ALL COMMANDS</button>
+    <div class="cmd-list" id="cmdList"></div>
+  </div>
+
+  <div class="card">
+    <div class="prompt-box">
+      Please provide a prefix (optional). If you choose not to, entering "non-prefix" will be considered as your input.
+    </div>
+    <input type="text" id="prefixInput" placeholder="@, #, /, *, .">
+  </div>
+
+  <div class="card">
+    <div class="prompt-box">
+      Please provide an admin UID (optional). If you choose not to, entering "default" will be considered as your input.
+    </div>
+    <input type="text" id="uidInput" placeholder="Admin userID">
+  </div>
+
+  <div class="card">
+    <label class="terms">
+      <input type="checkbox" id="termsCheck">
+      Checking this box certifies that I have read, understood, and agreed to the Terms and Conditions.
+    </label>
+    <button class="gradient-btn" id="submitBtn" disabled>Submit</button>
+    <div class="status" id="statusMsg"></div>
+  </div>
+
+</div>
+
+<script>
+const COMMANDS = [
+  "help","prefix","balance","daily","work","slot","top","give",
+  "youtube","tiktok","pinterest","alldl","uptime"
+];
+
+const cmdList = document.getElementById('cmdList');
+const selected = new Set(COMMANDS);
+
+function render() {
+  cmdList.innerHTML = '';
+  COMMANDS.forEach(cmd => {
+    const div = document.createElement('div');
+    div.className = 'cmd-item' + (selected.has(cmd) ? ' selected' : '');
+    div.textContent = cmd;
+    div.onclick = () => {
+      selected.has(cmd) ? selected.delete(cmd) : selected.add(cmd);
+      render();
+    };
+    cmdList.appendChild(div);
+  });
+}
+render();
+
+document.getElementById('selectAllBtn').onclick = () => {
+  if (selected.size === COMMANDS.length) { selected.clear(); }
+  else { COMMANDS.forEach(c => selected.add(c)); }
+  render();
+};
+
+const terms = document.getElementById('termsCheck');
+const submitBtn = document.getElementById('submitBtn');
+terms.onchange = () => submitBtn.disabled = !terms.checked;
+
+submitBtn.onclick = async () => {
+  const appstate = document.getElementById('appstate').value.trim();
+  const prefix = document.getElementById('prefixInput').value.trim() || 'non-prefix';
+  const uid = document.getElementById('uidInput').value.trim() || 'default';
+  const status = document.getElementById('statusMsg');
+
+  if (!appstate) { status.textContent = '❌ Please paste your appstate/cookie first.'; return; }
+
+  status.textContent = '⏳ Submitting...';
+  try {
+    const res = await fetch('/api/configure', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ appstate, prefix, uid, commands: Array.from(selected) })
+    });
+    const data = await res.json();
+    status.textContent = data.ok ? '✅ Saved! Restart the bot to apply.' : '❌ ' + data.error;
+  } catch (e) {
+    status.textContent = '❌ Network error: ' + e.message;
+  }
+};
+</script>
+</body>
+            </html>
