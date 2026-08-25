@@ -5,7 +5,7 @@
   "admins": [],
   "currency": {
     "name": "Sinzu Coins",
-    "symbol": "\u20b1",
+    "symbol": "₱",
     "startingBalance": 500,
     "dailyMin": 100,
     "dailyMax": 500,
@@ -17,7 +17,7 @@
   "slot": {
     "minBet": 10,
     "maxBet": 5000,
-    "symbols": ["\ud83c\udf52", "\ud83c\udf4b", "\ud83c\udf4a", "\ud83c\udf47", "\ud83d\udc8e", "7\ufe0f\u20e3"],
+    "symbols": ["🍒", "🍋", "🍊", "🍇", "💎", "7️⃣"],
     "payoutMultiplier": 5
   },
   "language": "en",
