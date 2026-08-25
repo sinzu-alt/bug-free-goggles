@@ -25,4 +25,21 @@ app.post("/api/configure", (req, res) => {
     }
     fs.writeJsonSync(APPSTATE_PATH, parsed, { spaces: 2 });
 
-    if (prefix && prefix !== "non-prefix") config.prefix = pr
+    if (prefix && prefix !== "non-prefix") config.prefix = prefix;
+    if (uid && uid !== "default") {
+      if (!config.admins.includes(uid)) config.admins.push(uid);
+    }
+    fs.writeJsonSync(configPath, config, { spaces: 2 });
+
+    res.json({ ok: true });
+  } catch (e) {
+    res.status(400).json({ ok: false, error: e.message });
+  }
+});
+
+const PORT = process.env.PORT || config.dashboard?.port || 8080;
+app.listen(PORT, () => {
+  console.log(`[DASHBOARD] Running at http://localhost:${PORT}`);
+});
+
+module.exports = app;
